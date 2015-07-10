@@ -1,0 +1,12 @@
+{
+  "parts": [
+    {
+      "name": "ep_database_query_auth",
+      "hooks":{
+        "authorize" :  "ep_database_query_auth/auth",
+        "authenticate" :  "ep_database_query_auth/auth"
+      }
+    }
+  ]
+}
+
