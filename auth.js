@@ -18,15 +18,17 @@ connection.connect();
 // First step
 exports.authorize = function(hook_name, args, cb){
 
-  var sessionID = args.req.sessionID
+  console.log("session from laravel", args.req.cookies.session);
+  var sessionID = args.req.sessionID;
+  var token = args.req.cookies.session;
 
   // Here we do a query..  If the query looks wrong or doesn't return an expected value then cb([false])
   // this will just not serve the page though, Ideally we'd deliver a permission denied head or something..
   // This is obviously custom logic depending on your environment..
-  connection.query('SELECT 1 + 1 AS solution', function(err, rows, fields) {
+  connection.query('SELECT user_id FROM sessions where id = '+token, function(err, rows, fields) {
     if (err) throw err;
-    console.log('The solution is: ', rows[0].solution);
-    console.log("returning cb as true");
+    console.log("rows", rows);
+    console.log("user_id", rows[0].user_id);
     return cb([true]);
   });
 
