@@ -1,15 +1,3 @@
-Currently supports MySQL
+# API Authentication for Etherpad
 
-This is more of an example than anything else..
-
-# Usage
-Put your database settings in settings.json IE
-
-```
-  "ep_database_query_auth": {
-    "user": "burp",
-    "password": "herp",
-    "hostname": "localhost",
-    "database": "derp"
-  }
-```
+Connects to our existing API, passing any cookies it receives, and checks for a 200 response.
