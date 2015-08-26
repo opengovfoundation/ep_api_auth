@@ -1,10 +1,10 @@
 {
   "parts": [
     {
-      "name": "ep_database_query_auth",
+      "name": "ep_api_auth",
       "hooks":{
-        "authorize" :  "ep_database_query_auth/auth",
-        "authenticate" :  "ep_database_query_auth/auth"
+        "authorize" :  "ep_api_auth/auth",
+        "authenticate" :  "ep_api_auth/auth"
       }
     }
   ]

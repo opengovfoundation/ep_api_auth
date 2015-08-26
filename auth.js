@@ -1,41 +1,72 @@
-var db = require('ep_etherpad-lite/node/db/DB').db;
 settings = require('../../src/node/utils/Settings');
 var cookieParser = require('ep_etherpad-lite/node_modules/cookie-parser');
 var session = require('ep_etherpad-lite/node_modules/express-session');
-var sessionStore = require('ep_etherpad-lite/node/db/SessionStore');
-
-var mysql      = require('mysql');
-var connection = mysql.createConnection({
-  host     : settings.ep_database_query_auth.hostname,
-  user     : settings.ep_database_query_auth.user,
-  password : settings.ep_database_query_auth.password,
-  database : settings.ep_database_query_auth.database
-});
-connection.connect(); 
-// We keep this connection open..
-// It might make more sense to open the connection on query?
+var http = require('http');
 
 // First step
 exports.authorize = function(hook_name, args, cb){
 
-  console.log("session from laravel", args.req.cookies.session);
-  var sessionID = args.req.sessionID;
-  var token = args.req.cookies.session;
+  function getAsUriParameters(data) {
+     var url = '';
+     for (var prop in data) {
+        url += encodeURIComponent(prop) + '=' +
+            encodeURIComponent(data[prop]) + '; ';
+     }
+     return url.substring(0, url.length - 1)
+  }
 
-  // Here we do a query..  If the query looks wrong or doesn't return an expected value then cb([false])
-  // this will just not serve the page though, Ideally we'd deliver a permission denied head or something..
-  // This is obviously custom logic depending on your environment..
-  connection.query('SELECT user_id FROM sessions where id = '+token, function(err, rows, fields) {
-    if (err) throw err;
-    console.log("rows", rows);
-    console.log("user_id", rows[0].user_id);
-    return cb([true]);
-  });
+  if(args.req.url.substring(0,3) === '/p/' && args.req.url.length > 3) {
+    var docSlug = args.req.url.substring(3);
 
+    // Sometimes we get a slug that is the string 'undefined', for some reason.
+    // Ignore this.
+    // TODO: Fix this.
+    if(docSlug !== 'undefined')
+    {
+
+      var cookies = args.req.cookies;
+
+      var options = {
+        'hostname': 'editor.madison.localhost',
+        'port': 80,
+        'path': '/api/docs/' + docSlug,
+        'method': 'GET',
+        'headers' : {
+          'Cookie': getAsUriParameters(cookies) // This doesn't work yet.
+        }
+      };
+
+      var request = http.request(options, function(response) {
+
+        response.on('data', function (chunk) {
+          if(response.statusCode !== 200) {
+            cb([false]);
+          }
+          else {
+            cb([true]);
+          }
+        });
+      });
+      request.end()
+    }
+    else {
+      cb([true]);
+    }
+  }
+  else {
+    cb([true]);
+  }
 }
 
 // SECOND STEP - only gets here if auth fails..
 exports.authenticate = function(hook_name, args, cb){
+
+  var sessionID = args.req.sessionID;
+  var token = args.req.cookies.session;
+
+  // TODO: We need a way to redirect the parent window.
+  args.res.redirect('/');
+
   /*
   console.debug("Database Write -> oauthredirectlookup:"+args.req.sessionID, "---", args.req.url);
   db.set("oauthredirectlookup:"+args.req.sessionID, args.req.url);
