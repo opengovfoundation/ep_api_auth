@@ -1,7 +1,6 @@
 settings = require('../../src/node/utils/Settings');
 var cookieParser = require('ep_etherpad-lite/node_modules/cookie-parser');
 var session = require('ep_etherpad-lite/node_modules/express-session');
-var http = require('http');
 
 // First step
 exports.authorize = function(hook_name, args, cb){
@@ -16,6 +15,21 @@ exports.authorize = function(hook_name, args, cb){
   }
 
   if(args.req.url.substring(0,3) === '/p/' && args.req.url.length > 3) {
+
+    if(typeof(settings.ep_api_auth.protocol) === 'undefined' ||
+      settings.ep_api_auth.protocol === 'http') {
+
+      var requester = require('http');
+    }
+    else if(settings.ep_api_auth.protocol === 'https') {
+      var requester = require('https');
+    }
+    else {
+      console.log('Unknown protocol encountered!  ' + settings.ep_api_auth.protocol);
+      return false;
+    }
+
+
     var docSlug = args.req.url.substring(3);
 
     // Sometimes we get a slug that is the string 'undefined', for some reason.
@@ -24,19 +38,17 @@ exports.authorize = function(hook_name, args, cb){
     if(docSlug !== 'undefined')
     {
 
-      var cookies = args.req.cookies;
-
       var options = {
-        'hostname': 'editor.madison.localhost',
-        'port': 80,
-        'path': '/api/docs/' + docSlug,
-        'method': 'GET',
+        'hostname': settings.ep_api_auth.host,
+        'port': settings.ep_api_auth.port ? settings.ep_api_auth.port : '80',
+        'path': settings.ep_api_auth.path.replace('{token}', docSlug),
+        'method': settings.ep_api_auth.method ? settings.ep_api_auth.method : 'GET',
         'headers' : {
-          'Cookie': getAsUriParameters(cookies) // This doesn't work yet.
+          'Cookie': getAsUriParameters(args.req.cookies)
         }
       };
 
-      var request = http.request(options, function(response) {
+      var request = requester.request(options, function(response) {
 
         response.on('data', function (chunk) {
           if(response.statusCode !== 200) {
