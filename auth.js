@@ -1,4 +1,4 @@
-settings = require('../../src/node/utils/Settings');
+var settings = require('../../src/node/utils/Settings');
 var cookieParser = require('ep_etherpad-lite/node_modules/cookie-parser');
 var session = require('ep_etherpad-lite/node_modules/express-session');
 
