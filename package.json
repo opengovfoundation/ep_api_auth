@@ -1,15 +1,22 @@
 {
-  "name": "ep_database_query_auth",
-  "description": "MySQL Query to check if a user has a token",
+  "name": "ep_api_auth",
+  "description": "API auth check if a user has a token",
   "version": "0.0.1",
   "author": {
     "name": "John McLear",
     "email": "john@mclear.co.uk",
     "url": "http://mclear.co.uk"
   },
-  "contributors": [],
+  "contributors": [
+    {
+      "name": "Bill Hunt",
+      "email": "bill@krues8dr.com",
+      "url": "http://krues8dr.com"
+    }
+  ],
   "dependencies": {
-    "mysql":"2.6.1"
+    "bluebird": "~3.0.5",
+    "request-promise": "~1.0.2"
   },
   "engines": {
     "node": "*"
