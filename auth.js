@@ -7,6 +7,7 @@ var authorManager = require('ep_etherpad-lite/node/db/AuthorManager');
 var groupManager = require('ep_etherpad-lite/node/db/GroupManager');
 var padManager = require('ep_etherpad-lite/node/db/PadManager');
 padManager.getPadAsync = Promise.promisify(padManager.getPad);
+authorManager.getAuthor4TokenAsync = Promise.promisify(authorManager.getAuthor4Token);
 
 var apiauthUsername = {};
 
@@ -57,22 +58,24 @@ exports.authorize = function(hook_name, args, cb){
       ])
       .spread(function(userData, documentData) {
 
-        console.log('got user', userData);
-        console.log('got document', documentData);
+        // console.log('got user', userData);
+        // console.log('got document', documentData);
 
         padManager.getPadAsync(documentData.document.id)
           .then(function(pad) {
             if(pad.id !== 'undefined') {
-              console.log('got pad', pad.getAllAuthors());
-              console.log('currently', args.req);
-              //authorManager.getAuthor4Token(
+              // console.log('got pad', pad.getAllAuthors());
+              // console.log('currently', args.req.cookies, args.req.cookies.token);
+              authorManager.getAuthor4TokenAsync(args.req.cookies.token)
+                .then(function(authorId) {
+                  authorManager.setAuthorName(authorId, userData.user.display_name);
+                });
             }
             else {
               padManager.addPad(documentData.document.id);
-              console.log('created pad');
+              // console.log('created pad');
             }
           });
-
 
         // authorManager.createAuthorIfNotExistsFor(user.id, user.display_name, function(err, author) {
         //   console.log('author', author);
